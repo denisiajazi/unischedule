@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UniSchedule — Optimizim Metaheuristik i Orarit Akademik</title>
+<style>
+  :root{
+    --thekse:#c8772e;        /* terracotta-tjegull */
+    --thekse-err:#b5403a;    /* e kuqe konflikti */
+    --thekse-ok:#3f7d5a;     /* jeshile e mirë */
+    --blu:#1f3a5f;           /* blu institucional */
+    --letr:#f6f3ec;          /* letrë kremi */
+    --vije:#d9d2c4;
+    --tekst:#23201b;
+    --hije:rgba(31,58,95,.08);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:Georgia,"Times New Roman",serif;background:var(--letr);color:var(--tekst);
+    line-height:1.55;-webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:"SF Mono",ui-monospace,"Cascadia Code",Consolas,monospace}
+  header{
+    border-bottom:2px solid var(--blu);padding:38px 28px 30px;max-width:1080px;margin:0 auto;
+  }
+  .eyebrow{font-family:ui-monospace,monospace;font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--thekse);margin-bottom:14px}
+  h1{font-size:clamp(28px,4.4vw,46px);line-height:1.08;font-weight:700;color:var(--blu);max-width:18ch}
+  .sub{margin-top:14px;font-size:17px;max-width:60ch;color:#4a463d}
+  .wrap{max-width:1080px;margin:0 auto;padding:30px 28px 80px}
+  .panel{
+    background:#fff;border:1px solid var(--vije);border-radius:6px;padding:24px;
+    box-shadow:0 1px 0 var(--hije);margin-bottom:26px;
+  }
+  .kontrolle{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+  button{
+    font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;border:none;border-radius:5px;
+    padding:12px 22px;background:var(--blu);color:#fff;transition:transform .08s,background .2s;
+  }
+  button:hover{background:#16293f}
+  button:active{transform:translateY(1px)}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  button.dyte{background:#fff;color:var(--blu);border:1.5px solid var(--blu)}
+  button.dyte:hover{background:var(--letr)}
+  .metrika-rresht{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:6px}
+  .metrika{border:1px solid var(--vije);border-radius:5px;padding:14px 16px;background:var(--letr)}
+  .metrika .vlera{font-family:ui-monospace,monospace;font-size:30px;font-weight:700;color:var(--blu);line-height:1}
+  .metrika .vlera.k-keq{color:var(--thekse-err)}
+  .metrika .vlera.k-mire{color:var(--thekse-ok)}
+  .metrika .etiket{font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:#7a7264;margin-top:8px;font-family:ui-monospace,monospace}
+  .faza-shenjë{display:inline-block;font-family:ui-monospace,monospace;font-size:12px;padding:4px 10px;border-radius:20px;background:var(--hije);color:var(--blu);margin-left:12px;vertical-align:middle}
+  h2{font-size:21px;color:var(--blu);margin-bottom:4px}
+  .ndihm{font-size:14px;color:#6f6757;margin-bottom:18px}
+  table{border-collapse:collapse;width:100%;font-family:ui-monospace,monospace;font-size:12.5px}
+  th,td{border:1px solid var(--vije);padding:7px 8px;text-align:left;vertical-align:top}
+  th{background:var(--blu);color:#fff;font-weight:700;position:sticky;top:0}
+  td.brez{background:var(--letr);font-weight:700;white-space:nowrap}
+  .qeliz{border-radius:3px;padding:5px 7px;margin:2px 0;font-size:11.5px;line-height:1.25}
+  .qeliz.ok{background:#e7f0ea;border-left:3px solid var(--thekse-ok)}
+  .qeliz.konflikt{background:#f6e0de;border-left:3px solid var(--thekse-err);animation:pulse 1s ease}
+  @keyframes pulse{0%{background:#f3b6b1}100%{background:#f6e0de}}
+  .barra{height:8px;background:var(--vije);border-radius:5px;overflow:hidden;margin-top:18px}
+  .barra > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--thekse),var(--thekse-ok));transition:width .3s}
+  footer{border-top:1px solid var(--vije);max-width:1080px;margin:0 auto;padding:26px 28px 50px;font-size:13.5px;color:#6f6757}
+  footer a{color:var(--blu)}
+  .legjend{display:flex;gap:20px;flex-wrap:wrap;font-size:13px;margin-top:14px;font-family:ui-monospace,monospace}
+  .legjend span{display:inline-flex;align-items:center;gap:7px}
+  .pik{width:12px;height:12px;border-radius:3px;display:inline-block}
+  @media(max-width:680px){.metrika-rresht{grid-template-columns:repeat(2,1fr)}}
+  @media(prefers-reduced-motion:reduce){.qeliz.konflikt{animation:none}}
+</style>
+</head>
+<body>
+<header>
+  <div class="eyebrow">Punim Diplome · Master i Shkencave · UET</div>
+  <h1>UniSchedule</h1>
+  <p class="sub">Një motor metaheuristik hibrid (algoritëm gjenetik + ftohje e simuluar) që ndërton orarin akademik duke eliminuar konfliktet. Provoje drejpërdrejt në shfletues — shih si konfliktet (të kuqe) zhduken brez pas brezi.</p>
+</header>
+
+<div class="wrap">
+  <div class="panel">
+    <div class="kontrolle">
+      <button id="btn-fillo">Gjenero orarin fillestar</button>
+      <button id="btn-optimizo" class="dyte" disabled>Optimizo me GA-SA</button>
+      <span id="faza" class="faza-shenjë" style="display:none"></span>
+    </div>
+    <div class="metrika-rresht">
+      <div class="metrika"><div class="vlera" id="m-konflikte">—</div><div class="etiket">Konflikte të rënda</div></div>
+      <div class="metrika"><div class="vlera" id="m-pershtat">—</div><div class="etiket">Përshtatshëmria</div></div>
+      <div class="metrika"><div class="vlera" id="m-brezi">—</div><div class="etiket">Brezi</div></div>
+      <div class="metrika"><div class="vlera" id="m-koha">—</div><div class="etiket">Koha (ms)</div></div>
+    </div>
+    <div class="barra"><i id="barra"></i></div>
+  </div>
+
+  <div class="panel">
+    <h2>Orari i gjeneruar</h2>
+    <p class="ndihm">Rreshtat janë brezat kohorë; kolonat janë sallat. Secila qelizë tregon lëndën, grupin dhe pedagogun.</p>
+    <div style="overflow-x:auto"><table id="tabela"><tbody><tr><td style="border:none;color:#9a9279;padding:30px 4px">Shtyp "Gjenero orarin fillestar" për të nisur.</td></tr></tbody></table></div>
+    <div class="legjend">
+      <span><i class="pik" style="background:#3f7d5a"></i> Pa konflikt</span>
+      <span><i class="pik" style="background:#b5403a"></i> Konflikt i rëndë (burim i dyfishuar)</span>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <strong>UniSchedule</strong> — sistem web me optimizim metaheuristik për menaxhimin e orarit të mësimdhënies.
+  Pjesë e punimit të diplomës në Universitetin Europian të Tiranës.
+  Kodi i plotë (backend Node.js, bazë e të dhënave MySQL, frontend React) gjendet në
+  <a href="https://github.com/denisiajazi/unischedule">deponinë GitHub</a>.
+  Demoja këtu e ekzekuton motorin GA-SA tërësisht në shfletues mbi të dhëna shembull.
+</footer>
+
+<script src="data.js"></script>
+<script src="engine.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+let zgjidhjaAktuale = null;
+
+function vizato(zgjidhja){
+  const brezat = TE_DHENAT.brezat, sallat = TE_DHENAT.sallat;
+  // gjej konfliktet për ngjyrosje
+  const numKey = {};
+  for (const c of zgjidhja.caktimet){
+    ["pedagogId","sallaId","grupId"].forEach(f=>{
+      const k=f+"|"+c.brezId+"|"+c[f]; numKey[k]=(numKey[k]||0)+1;
+    });
+  }
+  const eshteKonflikt = c => ["pedagogId","sallaId","grupId"].some(f=>numKey[f+"|"+c.brezId+"|"+c[f]]>1);
+
+  let html = "<thead><tr><th>Brezi</th>";
+  sallat.forEach(s=> html += `<th>${s.emri} <span style="opacity:.7">(${s.kapaciteti})</span></th>`);
+  html += "</tr></thead><tbody>";
+  for (const b of brezat){
+    html += `<tr><td class="brez">${b.dita}<br>${b.ora}</td>`;
+    for (const s of sallat){
+      const aty = zgjidhja.caktimet.filter(c=>c.brezId===b.id && c.sallaId===s.id);
+      html += "<td>";
+      for (const c of aty){
+        const kls = eshteKonflikt(c) ? "konflikt" : "ok";
+        html += `<div class="qeliz ${kls}"><strong>${HARTA.lenda[c.lendaId]}</strong><br>${HARTA.grup[c.grupId]} · ${HARTA.pedagog[c.pedagogId]}</div>`;
+      }
+      html += "</td>";
+    }
+    html += "</tr>";
+  }
+  html += "</tbody>";
+  $("tabela").innerHTML = html;
+}
+
+function perditesoMetrika(konflikte, pershtat, brezi, faza, koha){
+  const mk=$("m-konflikte"); mk.textContent=konflikte;
+  mk.className="vlera "+(konflikte>0?"k-keq":"k-mire");
+  $("m-pershtat").textContent=pershtat;
+  $("m-brezi").textContent=brezi;
+  if(koha!=null)$("m-koha").textContent=koha;
+  const f=$("faza"); f.style.display="inline-block";
+  const emra={fillestare:"Gjendja fillestare",gjenetik:"Faza gjenetike",ftohje:"Ftohje e simuluar ✓"};
+  f.textContent=emra[faza]||faza;
+}
+
+$("btn-fillo").onclick=()=>{
+  const pop=gjeneroPopullateFillestare(1,BURIMET)[0];
+  pop.pershtatshmeria=llogaritPershtatshmerine(pop,KUFIZIMET);
+  zgjidhjaAktuale=pop;
+  vizato(pop);
+  perditesoMetrika(konfliktet(pop),pop.pershtatshmeria,0,"fillestare",0);
+  $("barra").style.width="6%";
+  $("btn-optimizo").disabled=false;
+};
+
+$("btn-optimizo").onclick=async()=>{
+  $("btn-optimizo").disabled=true; $("btn-fillo").disabled=true;
+  const t0=performance.now();
+  const gjen=optimizoOrarin(BURIMET,KUFIZIMET);
+  for await (const hap of gjen){
+    zgjidhjaAktuale=hap.zgjidhja;
+    vizato(hap.zgjidhja);
+    const koha=Math.round(performance.now()-t0);
+    perditesoMetrika(hap.konflikte,hap.pershtatshmeria,hap.brezi,hap.faza,koha);
+    $("barra").style.width=Math.min(100,6+hap.brezi/1.3)+"%";
+    await new Promise(r=>setTimeout(r,90)); // animim i dukshëm
+  }
+  $("barra").style.width="100%";
+  $("btn-fillo").disabled=false;
+};
+</script>
+</body>
+</html>
