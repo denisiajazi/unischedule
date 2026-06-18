@@ -1,0 +1,17 @@
+{
+  "name": "unischedule",
+  "version": "1.0.0",
+  "description": "Sistem web me optimizim metaheuristik (GA-SA) per menaxhimin e orarit akademik. Punim diplome, UET.",
+  "main": "src/backend/server.js",
+  "scripts": {
+    "start": "node src/backend/server.js",
+    "test": "node test/test_motori.js"
+  },
+  "keywords": ["timetabling", "genetic-algorithm", "simulated-annealing", "metaheuristic", "express", "mysql"],
+  "author": "Denis Ajazi",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.19.2",
+    "mysql2": "^3.9.7"
+  }
+}
